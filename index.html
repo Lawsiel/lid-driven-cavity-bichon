@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Lid-driven cavity surrogate: neural-network prediction</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+  <h1>Lid-driven cavity: neural-network surrogate</h1>
+  <p class="byline">Student: Chiara (Week 9 assignment)</p>
+  <p>A small trained network, exported as plain weights, predicts the flow at every cell centre of a 50 × 50 grid from (x, y, Re). Everything runs in this page. No CFD solver and no training.</p>
+</header>
+
+<main>
+  <section class="card plot-card" aria-label="Flow field">
+    <div id="plotWrap"><canvas id="plot" role="img" aria-label="Heatmap of the predicted flow field in the cavity"></canvas></div>
+  </section>
+
+  <aside>
+    <section class="card">
+      <h2>Reynolds number</h2>
+      <div class="re-big">
+        <label for="reNumber" style="margin:0">Re =</label>
+        <input id="reNumber" type="number" step="any" inputmode="decimal">
+      </div>
+      <input id="reRange" type="range" step="0.01" aria-label="Reynolds number slider">
+      <div class="range-ends"><span id="reMinLabel"></span><span id="reMaxLabel"></span></div>
+      <p class="small muted" style="margin:8px 0 0">The network was trained on Re 20–300. Above 300 it is extrapolating.</p>
+      <div class="chips" id="chips" aria-label="Preset Reynolds numbers"></div>
+
+      <div class="field-group">
+        <label for="fieldSel">Field shown</label>
+        <select id="fieldSel">
+          <option value="speed">Speed, sqrt(u² + v²)</option>
+          <option value="u">u (horizontal velocity)</option>
+          <option value="v">v (vertical velocity)</option>
+          <option value="p">p (pressure)</option>
+        </select>
+        <label class="check"><input id="streamChk" type="checkbox" checked> Streamlines</label>
+        <label class="check"><input id="smoothChk" type="checkbox"> Smooth between cells</label>
+        <label class="check"><input id="lockChk" type="checkbox"> Keep one colour scale for all Re</label>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Value under the pointer</h2>
+      <div class="readout" id="readout" aria-live="off">Move the pointer over the heatmap.</div>
+      <div class="small muted" id="timing"></div>
+    </section>
+
+    <section class="card">
+      <h2>Check against Python</h2>
+      <div id="verifySummary"></div>
+      <details>
+        <summary>Show the verification points</summary>
+        <div class="table-scroll"><table id="verifyTable"></table></div>
+      </details>
+      <div class="row" style="margin-top:12px; flex-wrap:wrap">
+        <button id="rerunBtn" type="button">Run check again</button>
+        <label class="btn" for="fileInput" style="margin:0; font-weight:400">Load another model file…</label>
+        <input id="fileInput" type="file" accept=".json,application/json">
+      </div>
+      <div id="message" class="small muted" role="status"></div>
+      <div class="small muted" id="modelInfo" style="margin-top:6px"></div>
+    </section>
+  </aside>
+</main>
+<div class="wide"><section class="card" aria-label="CFD comparison">
+  <h2>Extrapolation test: CFD reference vs neural network</h2>
+  <p class="small muted" style="margin:0 0 10px">The CFD cases below are a separate steady lid-driven-cavity solution (finite-volume projection method on the same 50 × 50 staggered grid). They were used only for checking; the network was not retrained. Quantity shown follows the “Field shown” menu above. CFD and network share one colour scale.</p>
+  <div class="chips" id="cmpChips" role="group" aria-label="CFD reference cases"></div>
+  <div class="cmp-grid"><div><canvas id="cvCfd" role="img" aria-label="CFD reference field"></canvas></div><div><canvas id="cvAi" role="img" aria-label="Neural-network prediction field"></canvas></div><div><canvas id="cvDiff" role="img" aria-label="Difference between prediction and CFD"></canvas></div></div>
+  <p id="cmpStats" class="small" style="margin:12px 0 6px"></p>
+  <details open><summary>Error at every CFD case (relative L2 error, network vs CFD)</summary><div class="table-scroll"><table id="cmpTable"></table></div></details>
+</section></div>
+
+<!-- Data (plain .js files so the page also works when opened from disk) -->
+<script src="data/model-data.js"></script>
+<script src="data/cfd-data.js"></script>
+<!-- Code -->
+<script src="js/cavity-core.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
